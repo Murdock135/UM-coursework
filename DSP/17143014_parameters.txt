@@ -1,0 +1,3 @@
+Cut-off frequency, f_c = 9530 Hz
+Sampling frequency, f_samp = 48000 Hz
+Stop ripple, delta_s = 0.1
