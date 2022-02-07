@@ -4,4 +4,4 @@
 %book example 25.1
 f = @(x,y) -2*x^3 +12*x^2 -20*x + 8.5;
 
-Euler_r = Euler(f,0,4,1,0.5)
+[Euler_r, Euler_i] = Euler(f,0,4,1,0.5)
