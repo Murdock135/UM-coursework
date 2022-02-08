@@ -18,11 +18,7 @@ plot(heun_r)
 plot(midpoint_r)
 legend
 
-%% Book example 25.9 multivariable ODEs
 
-%not done yet
-f1 = @(y1,y2) -0.5*y1;
-f2 = @(y1,y2) 4-0.3*y2-0.1*y1;
 
 %% RK 2
 clear all;
@@ -40,7 +36,7 @@ plot(RK2_heun_r)
 legend
 
 %% Classical RK4: Book example 25.7
-clear all;
+clea all;
 f = @(x,y) -2*x^3 +12*x^2 -20*x + 8.5;
 g = @(x,y) 4*exp(0.8*x)-0.5*y;
 
@@ -49,3 +45,9 @@ g = @(x,y) 4*exp(0.8*x)-0.5*y;
 
 figure(3)
 plot(RK4_r)
+
+%% Book example 25.9 multivariable ODEs
+
+%not done yet
+f1 = @(y1,y2) -0.5*y1;
+f2 = @(y1,y2) 4-0.3*y2-0.1*y1;
