@@ -4,7 +4,7 @@ clear all;
 %euler, heun, systems of linear equations, shooting, etc.
 
 %% book example 25.1
-clear all;
+
 f = @(x,y) -2*x^3 +12*x^2 -20*x + 8.5;
 
 [Euler_r, Euler_i] = Euler(f,0,4,1,0.5);
@@ -20,12 +20,11 @@ legend
 
 %% Book example 25.9 multivariable ODEs
 
-%not done yet
 f1 = @(y1,y2) -0.5*y1;
 f2 = @(y1,y2) 4-0.3*y2-0.1*y1;
 
 %% RK 2
-clear all;
+
 f = @(x,y) -2*x^3 +12*x^2 -20*x + 8.5;
 
 [RK2_mid_r, RK2_mid_i] = RK2(f,0,4,1, 0.5, 1);
@@ -40,12 +39,9 @@ plot(RK2_heun_r)
 legend
 
 %% Classical RK4: Book example 25.7
-clear all;
+
 f = @(x,y) -2*x^3 +12*x^2 -20*x + 8.5;
 g = @(x,y) 4*exp(0.8*x)-0.5*y;
 
-%[RK4_r, RK4_i] = RK4(f,0,4,1, 0.5);
-[RK4_r, RK4_i] = RK4(g,0,4,2, 0.5);
-
-figure(3)
-plot(RK4_r)
+[RK4_r, RK4_i] = RK4(f,0,4,1, 0.5);
+plot()
