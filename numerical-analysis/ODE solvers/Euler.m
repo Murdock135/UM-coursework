@@ -6,7 +6,7 @@ i = 1; %iteration
 y(i) = y0; %initial condition
 x(i) = x0; %initial condition
 
-n = (x_end-x0)/h;
+n = (x_end-x0)/h; %number of steps
 
 for i=1:n
     y(i+1) = y(i)+h*f(x(i),y(i));
