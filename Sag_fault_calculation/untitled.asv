@@ -16,27 +16,26 @@ x = x.*100./s_old
 %% Y bus calculation
 
 % import data
-linedata = xlsread('line_data.xlsx');
-impedances = linedata(:,3:5); % storing the impedances only
+linedata = readtable('line_data.xlsx');
+
+% converting the node names into categorical type
+linedata.FromNode = string(linedata.FromNode);
+linedata.ToNode = string(linedata.ToNode);
+linedata.FromNode = categorical(linedata.FromNode);
+linedata.ToNode = categorical(linedata.ToNode);
+
+impedances = [linedata.R linedata.X linedata.B]; % storing the impedances only
 impedances(:,2) = impedances(:,2)*i;  % transforming into reactances
-nodes = linedata(:,1:2); % storing the buses/nodes only
+nodes = [linedata.FromNode linedata.ToNode]; % storing the buses/nodes only
 from_node = nodes(:,1);
 to_node = nodes(:,2);
 
 Y_bus = ones(14,14); % initializing the Y bus
+unique_from_nodes = unique(from_node);
+unique_to_nodes = unique(to_node);
 
-for m=1:length(from_node) % from nodes
-    if from_node
-    for n=1:length(to_node) % to nodes
-        
-    end
+% calculating the diagonal elements
+for m=1:length(unique(from_node))
+    
+    z = impedances(from_node==unique_from_nodes(m),:);
 end
-
-% buses = 1:14;
-% for bus=1:14
-%     if bus~=from_node(bus)
-%         from_node = [from_node; bus];
-%     end
-% end
-
-% group linedata by from node
