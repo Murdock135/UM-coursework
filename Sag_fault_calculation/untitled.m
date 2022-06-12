@@ -17,6 +17,7 @@ x = x.*100./s_old
 
 % import data
 linedata = readtable('line_data.xlsx');
+%% Setting up the data for processing
 
 % converting the node names into categorical type
 linedata.FromNode = string(linedata.FromNode);
@@ -34,8 +35,17 @@ Y_bus = ones(14,14); % initializing the Y bus
 unique_from_nodes = unique(from_node);
 unique_to_nodes = unique(to_node);
 
-% calculating the diagonal elements
+%% calculating the diagonal elements
+% 
 y_diag = eye(14,14);
+for m=1:length(unique(from_node))
+    z = impedances(from_node==unique_from_nodes(m),:);
+    y_diag(unique_from_nodes(m), unique_from_nodes(m)) = 1/(sum(z(:,1))+sum(z(:,2))+sum(z(:,3)));
+end
+
+%% calculating off diagonal elements
+
+y_off = zeros(14,14);
 for m=1:length(unique(from_node))
     
     z = impedances(from_node==unique_from_nodes(m),:);
