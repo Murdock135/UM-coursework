@@ -17,6 +17,12 @@ x = x.*100./s_old
 
 % import data
 linedata = readtable('line_data.xlsx');
+% converting the node names into categorical type
+linedata.FromNode = string(linedata.FromNode);
+linedata.ToNode = string(linedata.ToNode);
+linedata.FromNode = categorical(linedata.FromNode);
+linedata.ToNode = categorical(linedata.ToNode);
+
 impedances = [linedata.R linedata.X linedata.B]; % storing the impedances only
 impedances(:,2) = impedances(:,2)*i;  % transforming into reactances
 nodes = [linedata.FromNode linedata.ToNode]; % storing the buses/nodes only
