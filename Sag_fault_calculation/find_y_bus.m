@@ -24,7 +24,7 @@ function y_bus = find_y_bus(linedata)
     
     % calculating off diagonal elements
     % preprocessing for calculating off diagonal elements
-    linedata_matrix = readmatrix(linedata)
+    linedata_matrix = readmatrix(linedata);
     nodes = linedata_matrix(:,1:2);
     y_off = zeros(14,14);
     impedances = impedances(:,1)+impedances(:,2)+impedances(:,3);
@@ -35,4 +35,4 @@ function y_bus = find_y_bus(linedata)
         y_off(nodes(m,1),nodes(m,2)) = -1/impedances(m);
     end
 
-    Y_bus = y_off + y_diag;
+    Y_bus = y_off + y_diag

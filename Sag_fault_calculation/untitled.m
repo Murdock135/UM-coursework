@@ -45,7 +45,7 @@ end
 %% calculating off diagonal elements
 
 % preprocessing
-linedata_matrix = readmatrix("line_data.xlsx")
+linedata_matrix = readmatrix("line_data.xlsx");
 nodes = linedata_matrix(:,1:2);
 y_off = zeros(14,14);
 impedances = impedances(:,1)+impedances(:,2)+impedances(:,3);
@@ -56,5 +56,5 @@ for m=1:r
     y_off(nodes(m,1),nodes(m,2)) = -1/impedances(m);
 end
 
-Y_bus = y_off + y_diag
+Y_bus = y_off + y_diag;
 
