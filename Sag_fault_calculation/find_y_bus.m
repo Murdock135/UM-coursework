@@ -1,4 +1,4 @@
-function y_bus = find_y_bus(linedata)
+function [y_bus, linedata] = find_y_bus(linedata)
 
     % import data as table
     linedata_table = readtable(linedata);
