@@ -9,7 +9,7 @@ function y_bus = find_y_bus(linedata)
     linedata_table.ToNode = categorical(linedata_table.ToNode);
     impedances = [linedata_table.R linedata_table.X linedata_table.B]; % storing the impedances only 
     impedances(:,2) = impedances(:,2)*i;  % transforming into reactances
-    impedances(:,3) = impedances(:,3)*i; % transforming into susceptances
+    impedances(:,3) = impedances(:,3)*i./2; % transforming into susceptances
     nodes = [linedata_table.FromNode linedata_table.ToNode]; % storing the buses/nodes only
     from_node = nodes(:,1);
     to_node = nodes(:,2);
@@ -26,8 +26,8 @@ function y_bus = find_y_bus(linedata)
         B = z(:,3)
         for k=1:r
             k
-            Y = -1/(R(k)+X(k))
-            y_diag(unique_from_nodes(m), unique_from_nodes(m)) = y_diag(unique_from_nodes(m), unique_from_nodes(m))+ Y+B(k);
+            Y(k) = 1./(R(k)+X(k))
+            y_diag(unique_from_nodes(m), unique_from_nodes(m)) = y_diag(unique_from_nodes(m), unique_from_nodes(m))+Y(k)+B(k);
         end 
     end
     
@@ -41,7 +41,10 @@ function y_bus = find_y_bus(linedata)
     
     
     for m=1:r
+        nodes(m,1)
+        nodes(m,2)
         y_off(nodes(m,1),nodes(m,2)) = -1/impedances(m);
+        y_off(nodes(m,2),nodes(m,1)) = y_off(nodes(m,1),nodes(m,2));
     end
 
     y_bus = y_off + y_diag;
