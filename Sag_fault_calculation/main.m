@@ -62,4 +62,16 @@ for m=1:r
 end
 
 y_bus = y_off + y_diag;
+%% z bus calculation
 z_bus = y_bus^-1;
+
+%% prefault voltages
+
+v = readmatrix('voltages.xlsx'); % prefault voltages
+v_magnitudes = v(:,1);
+v_angles = deg2rad(v(:,2));
+
+% converting to rectangular
+vx = v_magnitudes.*cos(v_angles);
+vy = v_magnitudes.*sin(v_angles);
+v = vx+vy*i;
