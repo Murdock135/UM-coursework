@@ -2,7 +2,7 @@ function y_bus = find_y_bus(linedata)
 
     % import data as table
     linedata_table = readtable(linedata);
-    Y_bus = ones(14,14); % initializing the Y bus
+    y_bus = ones(14,14); % initializing the Y bus
 
     % Preprocessing for finding diagonal elements
     linedata_table.FromNode = categorical(linedata_table.FromNode);
@@ -35,4 +35,4 @@ function y_bus = find_y_bus(linedata)
         y_off(nodes(m,1),nodes(m,2)) = -1/impedances(m);
     end
 
-    Y_bus = y_off + y_diag
+    y_bus = y_off + y_diag
