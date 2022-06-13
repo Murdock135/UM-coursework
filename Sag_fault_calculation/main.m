@@ -75,3 +75,17 @@ v_angles = deg2rad(v(:,2));
 vx = v_magnitudes.*cos(v_angles);
 vy = v_magnitudes.*sin(v_angles);
 v = vx+vy*i;
+
+%% sags
+
+%Calculate the voltage sag at bus 4 and bus 13 when a three-phase-fault occurs at each bus 
+%in the system
+fault_v4 = zeros(14,1);
+fault_v13 = zeros(14,1);
+for bus=1:14
+    %if bus~=4|bus~=13
+        fault_v4(bus) = (1-z_bus(4,bus)/z_bus(bus,bus))*v(bus);
+        fault_v13(bus) = (1-z_bus(13,bus)/z_bus(bus,bus))*v(bus);
+    %end
+end
+
