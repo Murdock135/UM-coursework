@@ -1,6 +1,6 @@
 clc;clear;
 %% Standardizing generator sub-transient reactances
-sb = 100; % MVA
+s_new = 100; % MVA
 s_old = [250 100 80 50 50]; % MVA
 
 x1 = 15/100;
@@ -11,7 +11,7 @@ x5 = 8/100;
 x = [x1 x2 x3 x4 x5];
 
 % converting xolds to xnews
-x = x*i.*100./s_old;
+x = x*i.*s_new./s_old;
 
 %% Y bus calculation
 
@@ -40,7 +40,7 @@ for m=1:length(unique_from_nodes)
     B = z(:,3);
     for k=1:r
         k;
-        Y(k) = 1./(R(k)+X(k))
+        Y(k) = 1./(R(k)+X(k));
         y_diag(unique_from_nodes(m), unique_from_nodes(m)) = y_diag(unique_from_nodes(m), unique_from_nodes(m))+Y(k)+B(k);
     end 
 
@@ -96,8 +96,15 @@ end
 
 %% sags q2
 
+% forming the y,z buses
 y_bus_q2 = find_y_bus('line_data_q2.xlsx');
 z_bus_q2 = y_bus_q2^-1;
+% adding the generator sub-transient reactances to the z-bus matrix
+for k=1:length(x)
+    z_bus_q2(k,k) = x(k)+z_bus_q2(k,k);
+end
+
+%faults
 fault_v4_q2 = zeros(14,1);
 fault_v13_q2 = zeros(14,1);
 for bus=1:14
@@ -108,3 +115,24 @@ for bus=1:14
 end
 
 %% q3 
+
+s_old = [250 100 50]; % MVA
+x_q3 = [x1 x2 x4]; % removing the sub transient reactances
+x_q3 = x_q3*i.*s_new./s_old; % converting to new MVA base
+
+z_bus_q3 = y_bus^-1;
+% adding the generator sub-transient reactances to the z-bus matrix
+for k=1:length(x_q3)
+    z_bus_q3(k,k) = x_q3(k)+z_bus_q3(k,k);
+end
+
+% faults
+fault_v4_q3 = zeros(14,1);
+fault_v13_q3 = zeros(14,1);
+for bus=1:14
+    %if bus~=4|bus~=13
+        fault_v4_q3(bus) = (1-z_bus_q3(4,bus)/z_bus_q3(bus,bus))*v(bus);
+        fault_v13_q3(bus) = (1-z_bus_q3(13,bus)/z_bus_q3(bus,bus))*v(bus);
+    %end
+end
+
