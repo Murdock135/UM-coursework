@@ -17,32 +17,36 @@ x = x*1i.*s_new./s_old;
 
 % import data as table
 linedata = readmatrix("line_data.xlsx");
+[r_data,~] = size(linedata);
 
 % Preprocessing
-from_node = linedata(:,1);
-to_node = linedata(:,2);
-unique_from_nodes = unique(from_node);
-unique_to_nodes = unique(to_node);
+number_of_buses = max(max(linedata(:,1:2))); % picking the highest numbered bus
+y_bus = zeros(number_of_buses);
+[length_y_bus,~] = size(y_bus);
+
+% formatting the impedances
 R = linedata(:,3);
 X = linedata(:,4);
 B = linedata(:,5);
 impedances = [R X.*1i B*1i./2];
 
-
 % calculating the diagonal elements 
-y_diag = zeros(14,14);
-for m=1:length(unique_from_nodes)
-    z = impedances(from_node==unique_from_nodes(m)|to_node==unique_from_nodes(m),:);
-    [r,~] = size(z);
-    R = z(:,1);
-    X = z(:,2);
-    B = z(:,3);
-    for k=1:r
-        k;
-        Y(k) = 1./(R(k)+X(k));
-        y_diag(unique_from_nodes(m), unique_from_nodes(m)) = y_diag(unique_from_nodes(m), unique_from_nodes(m))+Y(k)+B(k);
-    end 
-
+for m=1:length_y_bus % m is the index of the y bus (row)
+    z = zeros(1,3); % initialize 3 columns (R,X,B)
+    for n=1:r_data % n is the index of the linedata (row)
+        if linedata(n,1)==m||linedata(n,2)==m
+            z = [z; linedata(n,3:5)]; % collecting all the impedances
+        end
+    end
+    [r_z,~] = size(z);
+    for impedance=1:r_z
+        R = z(impedance,1)
+        X = z(impedance,2)
+        B = z(impedance,3)
+        if R~=0 || X~=0
+            y_bus(m,m) = y_bus(m,m) + 1./(R+X.*1i) + B.*1i/2;
+        end
+    end
 end
 
 % calculating off diagonal elements
@@ -59,7 +63,7 @@ for m=1:r
     y_off(nodes(m,2),nodes(m,1)) = y_off(nodes(m,1),nodes(m,2));
 end
 
-y_bus = y_off + y_diag;
+y_bus = y_bus + y_off;
 %% z bus calculation
 z_bus = y_bus^-1;
 
