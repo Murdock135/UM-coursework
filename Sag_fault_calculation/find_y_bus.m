@@ -1,7 +1,6 @@
 function [y_bus, linedata] = find_y_bus(linedata_file)
 
     linedata = readmatrix(linedata_file);
-    y_bus = ones(14,14); % initializing the Y bus
 
     % Preprocessing for finding diagonal elements
     from_node = linedata(:,1);
@@ -11,20 +10,20 @@ function [y_bus, linedata] = find_y_bus(linedata_file)
     R = linedata(:,3);
     X = linedata(:,4);
     B = linedata(:,5);
-    impedances = [R X.*i B*i./2];
+    impedances = [R X.*1i B*1i./2];
     
     
     % calculating the diagonal elements 
     y_diag = zeros(14,14);
     for m=1:length(unique_from_nodes)
         z = impedances(from_node==unique_from_nodes(m)|to_node==unique_from_nodes(m),:);
-        [r,c] = size(z);
+        [r,~] = size(z);
         R = z(:,1);
         X = z(:,2);
         B = z(:,3);
         for k=1:r
             k;
-            Y(k) = 1./(R(k)+X(k))
+            Y(k) = 1./(R(k)+X(k));
             y_diag(unique_from_nodes(m), unique_from_nodes(m)) = y_diag(unique_from_nodes(m), unique_from_nodes(m))+Y(k)+B(k);
         end 
     
@@ -35,7 +34,7 @@ function [y_bus, linedata] = find_y_bus(linedata_file)
     nodes = linedata(:,1:2);
     y_off = zeros(14,14);
     impedances = impedances(:,1)+impedances(:,2);
-    [r,c] = size(linedata);
+    [r,~] = size(linedata);
     
     
     for m=1:r

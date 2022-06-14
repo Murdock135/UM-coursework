@@ -11,13 +11,12 @@ x5 = 8/100;
 x = [x1 x2 x3 x4 x5];
 
 % converting xolds to xnews
-x = x*i.*s_new./s_old;
+x = x*1i.*s_new./s_old;
 
 %% Y bus calculation
 
 % import data as table
 linedata = readmatrix("line_data.xlsx");
-y_bus = ones(14,14); % initializing the Y bus
 
 % Preprocessing for finding diagonal elements
 from_node = linedata(:,1);
@@ -27,14 +26,14 @@ unique_to_nodes = unique(to_node);
 R = linedata(:,3);
 X = linedata(:,4);
 B = linedata(:,5);
-impedances = [R X.*i B*i./2];
+impedances = [R X.*1i B*1i./2];
 
 
 % calculating the diagonal elements 
 y_diag = zeros(14,14);
 for m=1:length(unique_from_nodes)
     z = impedances(from_node==unique_from_nodes(m)|to_node==unique_from_nodes(m),:);
-    [r,c] = size(z);
+    [r,~] = size(z);
     R = z(:,1);
     X = z(:,2);
     B = z(:,3);
@@ -47,11 +46,10 @@ for m=1:length(unique_from_nodes)
 end
 
 % calculating off diagonal elements
-% preprocessing for calculating off diagonal elements
 nodes = linedata(:,1:2);
 y_off = zeros(14,14);
 impedances = impedances(:,1)+impedances(:,2);
-[r,c] = size(linedata);
+[r,~] = size(linedata);
 
 
 for m=1:r
@@ -79,18 +77,18 @@ v_angles = deg2rad(v(:,2));
 % converting to rectangular
 vx = v_magnitudes.*cos(v_angles);
 vy = v_magnitudes.*sin(v_angles);
-v = vx+vy*i;
+v = vx+vy*1i;
 
 %% sags q1
 
 %Calculate the voltage sag at bus 4 and bus 13 when a three-phase-fault occurs at each bus 
 %in the system
-fault_v4_q1 = zeros(14,1);
-fault_v13_q1 = zeros(14,1);
+sag_4_q1 = zeros(14,1);
+sag_13_q1 = zeros(14,1);
 for bus=1:14
     %if bus~=4|bus~=13
-        fault_v4_q1(bus) = (1-z_bus(4,bus)/z_bus(bus,bus))*v(bus);
-        fault_v13_q1(bus) = (1-z_bus(13,bus)/z_bus(bus,bus))*v(bus);
+        sag_4_q1(bus) = (1-z_bus(4,bus)/z_bus(bus,bus))*v(bus);
+        sag_13_q1(bus) = (1-z_bus(13,bus)/z_bus(bus,bus))*v(bus);
     %end
 end
 
@@ -105,20 +103,20 @@ for k=1:length(x)
 end
 
 %faults
-fault_v4_q2 = zeros(14,1);
-fault_v13_q2 = zeros(14,1);
+sag_4_q2 = zeros(14,1);
+sag_13_q2 = zeros(14,1);
 for bus=1:14
     %if bus~=4|bus~=13
-        fault_v4_q2(bus) = (1-z_bus_q2(4,bus)/z_bus_q2(bus,bus))*v(bus);
-        fault_v13_q2(bus) = (1-z_bus_q2(13,bus)/z_bus_q2(bus,bus))*v(bus);
+        sag_4_q2(bus) = (1-z_bus_q2(4,bus)/z_bus_q2(bus,bus))*v(bus);
+        sag_13_q2(bus) = (1-z_bus_q2(13,bus)/z_bus_q2(bus,bus))*v(bus);
     %end
 end
 
-%% q3 
+%% sags q3 
 
 s_old = [250 100 50]; % MVA
 x_q3 = [x1 x2 x4]; % removing the sub transient reactances
-x_q3 = x_q3*i.*s_new./s_old; % converting to new MVA base
+x_q3 = x_q3*1i.*s_new./s_old; % converting to new MVA base
 
 z_bus_q3 = y_bus^-1;
 % adding the generator sub-transient reactances to the z-bus matrix
@@ -127,12 +125,39 @@ for k=1:length(x_q3)
 end
 
 % faults
-fault_v4_q3 = zeros(14,1);
-fault_v13_q3 = zeros(14,1);
+sag_4_q3 = zeros(14,1);
+sag_13_q3 = zeros(14,1);
 for bus=1:14
     %if bus~=4|bus~=13
-        fault_v4_q3(bus) = (1-z_bus_q3(4,bus)/z_bus_q3(bus,bus))*v(bus);
-        fault_v13_q3(bus) = (1-z_bus_q3(13,bus)/z_bus_q3(bus,bus))*v(bus);
+        sag_4_q3(bus) = (1-z_bus_q3(4,bus)/z_bus_q3(bus,bus))*v(bus);
+        sag_13_q3(bus) = (1-z_bus_q3(13,bus)/z_bus_q3(bus,bus))*v(bus);
     %end
+end
+
+%% q4 no of sags
+
+d = linedata(:,6); %line distance
+frequency_100 = linedata(:,7); % faults/100km/yr
+
+frequency_d = frequency_100.*d./100;
+[r,c] = size(nodes);
+% calculating average sags
+average_sags_4 = zeros(r,3) % will be of the same size as the nodes matrix
+average_sags_4(:,1:2) = nodes;
+average_sags_13 = zeros(r,3) % will be of the same size as the nodes matrix
+average_sags_13(:,1:2) = nodes;
+
+% sags at lines for bus 4
+for k=1:r
+    sag1 = sag_4_q1(nodes(k,1));
+    sag2 = sag_4_q1(nodes(k,2));
+    average_sags_4(k,3) = 0.5*(sag1+sag2);
+end
+
+% sags at lines for bus 13
+for k=1:r
+    sag1 = sag_13_q1(nodes(k,1));
+    sag2 = sag_13_q1(nodes(k,2));
+    average_sags_13(k,3) = 0.5*(sag1+sag2);
 end
 
