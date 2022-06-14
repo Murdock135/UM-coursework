@@ -11,7 +11,7 @@ x5 = 8/100;
 x = [x1 x2 x3 x4 x5];
 
 % converting xolds to xnews
-x = x.*100./s_old;
+x = x*i.*100./s_old;
 
 %% Y bus calculation
 
@@ -64,6 +64,11 @@ end
 y_bus = y_off + y_diag;
 %% z bus calculation
 z_bus = y_bus^-1;
+
+% adding the generator sub-transient reactances to the z-bus matrix
+for k=1:length(x)
+    z_bus(k,k) = x(k)+z_bus(k,k);
+end
 
 %% prefault voltages
 
