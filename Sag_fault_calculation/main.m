@@ -79,7 +79,7 @@ vx = v_magnitudes.*cos(v_angles);
 vy = v_magnitudes.*sin(v_angles);
 v = vx+vy*1i;
 
-%% sags q1
+%% q1: sags
 
 %Calculate the voltage sag at bus 4 and bus 13 when a three-phase-fault occurs at each bus 
 %in the system
@@ -92,7 +92,10 @@ for bus=1:14
     %end
 end
 
-%% sags q2
+% sag magnitudes
+sag_4_q1 = abs(sag_4_q1);
+sag_13_q1 = abs(sag_13_q1);
+%% q2: sags (lines 4-5 and 6-13 are open)
 
 % forming the y,z buses
 y_bus_q2 = find_y_bus('line_data_q2.xlsx');
@@ -111,8 +114,10 @@ for bus=1:14
         sag_13_q2(bus) = (1-z_bus_q2(13,bus)/z_bus_q2(bus,bus))*v(bus);
     %end
 end
-
-%% sags q3 
+% sag magnitudes
+sag_4_q2 = abs(sag_4_q2);
+sag_13_q2 = abs(sag_13_q2);
+%% q3: sags (no x3 and x5)
 
 s_old = [250 100 50]; % MVA
 x_q3 = [x1 x2 x4]; % removing the sub transient reactances
@@ -133,8 +138,10 @@ for bus=1:14
         sag_13_q3(bus) = (1-z_bus_q3(13,bus)/z_bus_q3(bus,bus))*v(bus);
     %end
 end
-
-%% q4 no of sags
+% sag magnitudes
+sag_4_q3 = abs(sag_4_q3);
+sag_13_q3 = abs(sag_13_q3);
+%% q4: no of sags
 
 d = linedata(:,6); %line distance
 frequency_100 = linedata(:,7); % faults/100km/yr
@@ -142,9 +149,9 @@ frequency_100 = linedata(:,7); % faults/100km/yr
 frequency_d = frequency_100.*d./100;
 [r,c] = size(nodes);
 % calculating average sags
-average_sags_4 = zeros(r,3) % will be of the same size as the nodes matrix
+average_sags_4 = zeros(r,3); % will be of the same size as the nodes matrix
 average_sags_4(:,1:2) = nodes;
-average_sags_13 = zeros(r,3) % will be of the same size as the nodes matrix
+average_sags_13 = zeros(r,3); % will be of the same size as the nodes matrix
 average_sags_13(:,1:2) = nodes;
 
 % sags at lines for bus 4
