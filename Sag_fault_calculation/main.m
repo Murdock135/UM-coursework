@@ -18,7 +18,7 @@ x = x*1i.*s_new./s_old;
 % import data as table
 linedata = readmatrix("line_data.xlsx");
 
-% Preprocessing for finding diagonal elements
+% Preprocessing
 from_node = linedata(:,1);
 to_node = linedata(:,2);
 unique_from_nodes = unique(from_node);
@@ -168,3 +168,44 @@ for k=1:r
     average_sags_13(k,3) = 0.5*(sag1+sag2);
 end
 
+frequency_table = [nodes average_sags_4(:,3) average_sags_13(:,3) frequency_d];
+f_sag_4 = 0;
+f_sag_13 = 0;
+% frequency of sag under 40%=0.4 pu
+[r,~] = size(frequency_table);
+for k=1:r
+    if frequency_table(k,3)<0.4
+        f_sag_4 = f_sag_4 + frequency_table(k,5);
+    end
+    if frequency_table(k,4)<0.4
+        f_sag_13 = f_sag_13 + frequency_table(k,5);
+    end    
+end
+
+%% q4: Bar chart
+
+% creating chart
+chart_intervals = 0:0.1:1; % each number represents an upper bound for an interval
+chart_intervals = chart_intervals';
+chart = [chart_intervals zeros(length(chart_intervals),2)];
+[r,~] = size(chart);
+
+% filling the chart
+% sags at bus 4
+for k=1:length(sag_4_q3)
+    for index=2:r
+        if chart(index-1,1)<sag_4_q3(k)&&sag_4_q3(k)<chart(index,1)
+            chart(index,2) = chart(index,2)+1;
+        end
+    end
+end
+% sags at bus 13
+for k=1:length(sag_13_q3)
+    for index=2:r
+        if chart(index-1,1)<sag_13_q3(k)&&sag_13_q3(k)<chart(index,1)
+            chart(index,3) = chart(index,3)+1;
+        end
+    end
+end
+
+%% 
