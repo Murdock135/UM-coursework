@@ -208,7 +208,7 @@ for k=1:length(sag_4_q1)
         current_sag = sag_4_q1(k)
         if l_bound<sag_4_q1(k) && sag_4_q1(k)<u_bound
             
-            chart(index,2) = chart(index,2)+1
+            chart(index,2) = chart(index,2)+1;
         end
     end
 end
@@ -220,5 +220,70 @@ for k=1:length(sag_13_q1)
         end
     end
 end
+clc;
+chart = chart(2:end,:);
 
-%% 
+% barplots
+figure(1)
+bar(chart(:,1),chart(:,2))
+alpha(.3)
+
+hold on
+bar(chart(:,1),chart(:,3))
+alpha(.3)
+
+legend('Bus 4 sags','Bus 13 sags')
+
+%% q6 new generators
+clc;
+[y_bus_q6, linedata_q6, z_bus_q6] = find_y_z_bus('line_data.xlsx','gen_reactances_q6.xlsx');
+% faults
+sag_4_q6 = zeros(14,1);
+sag_13_q6 = zeros(14,1);
+for bus=1:14
+    %if bus~=4|bus~=13
+        sag_4_q6(bus) = (1-z_bus_q6(4,bus)/z_bus_q6(bus,bus))*v(bus);
+        sag_13_q6(bus) = (1-z_bus_q6(13,bus)/z_bus_q6(bus,bus))*v(bus);
+    %end
+end
+% sag magnitudes
+sag_4_q6 = abs(sag_4_q6);
+sag_13_q6 = abs(sag_13_q6);
+%% Plots
+
+% q1
+figure(2)
+bar(sag_4_q1)
+hold on
+bar(sag_13_q1)
+alpha(0.4)
+legend('Bus 4 sags','Bus 13 sags')
+
+% q2a
+figure(3)
+
+bar(sag_4_q2)
+hold on
+bar(sag_13_q2)
+alpha(0.4)
+legend('Bus 4 sags','Bus 13 sags')
+title('lines opened')
+
+% q2b
+figure(4)
+
+bar(sag_4_q3)
+hold on
+bar(sag_13_q3)
+alpha(0.4)
+title('generators disconnected')
+legend('Bus 4 sags','Bus 13 sags')
+
+% q6
+figure(5)
+bar(sag_4_q6)
+hold on
+bar(sag_13_q6)
+alpha(0.4)
+title('Sags after addition of generators')
+legend('Bus 4 sags','Bus 13 sags')
