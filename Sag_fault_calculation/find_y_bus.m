@@ -1,48 +1,67 @@
-function [y_bus, linedata] = find_y_bus(linedata_file)
+function [y_bus, linedata] = find_y_z_bus(linedata_file, sub_transient_data)
 
-    linedata = readmatrix(linedata_file);
-
-    % Preprocessing for finding diagonal elements
-    from_node = linedata(:,1);
-    to_node = linedata(:,2);
-    unique_from_nodes = unique(from_node);
-    unique_to_nodes = unique(to_node);
+    linedata = readmatrix("line_data.xlsx");
+    x = readmatrix(sub_transient_data);
+    for k=1:r_x
+        if x(k,1)~=0
+            linedata(end+1,1) = x(k,1);
+            linedata(end,2) = x(k,1);
+            linedata(end,4) = x(k,2);
+        end
+    end
+    [r_data,~] = size(linedata);
+    
+    % Preprocessing
+    number_of_buses = max(max(linedata(:,1:2))); % picking the highest numbered bus
+    y_bus = zeros(number_of_buses);
+    [length_y_bus,~] = size(y_bus);
+    
+    % formatting the impedances
     R = linedata(:,3);
     X = linedata(:,4);
     B = linedata(:,5);
     impedances = [R X.*1i B*1i./2];
     
-    
     % calculating the diagonal elements 
-    y_diag = zeros(14,14);
-    for m=1:length(unique_from_nodes)
-        z = impedances(from_node==unique_from_nodes(m)|to_node==unique_from_nodes(m),:);
-        [r,~] = size(z);
-        R = z(:,1);
-        X = z(:,2);
-        B = z(:,3);
-        for k=1:r
-            k;
-            Y(k) = 1./(R(k)+X(k));
-            y_diag(unique_from_nodes(m), unique_from_nodes(m)) = y_diag(unique_from_nodes(m), unique_from_nodes(m))+Y(k)+B(k);
-        end 
-    
+    for m=1:length_y_bus % m is the index of the y bus (row)
+        z = zeros(1,3); % initialize 3 columns (R,X,B)
+        for n=1:r_data % n is the index of the linedata (row)
+            if linedata(n,1)==m||linedata(n,2)==m
+                z = [z; linedata(n,3:5)]; % collecting all the impedances
+            end
+        end
+        [r_z,~] = size(z);
+        for impedance=1:r_z
+            R = z(impedance,1);
+            X = z(impedance,2);
+            B = z(impedance,3);
+            if R~=0 || X~=0
+                y_bus(m,m) = y_bus(m,m) + 1./(R+X.*1i) + B.*1i/2;
+            end
+        end
     end
     
     % calculating off diagonal elements
-    % preprocessing for calculating off diagonal elements
-    nodes = linedata(:,1:2);
-    y_off = zeros(14,14);
-    impedances = impedances(:,1)+impedances(:,2);
-    [r,~] = size(linedata);
-    
-    
-    for m=1:r
-        nodes(m,1)
-        nodes(m,2)
-        y_off(nodes(m,1),nodes(m,2)) = -1/impedances(m);
-        y_off(nodes(m,2),nodes(m,1)) = y_off(nodes(m,1),nodes(m,2));
+    for m=1:length_y_bus % first index of Y element
+        for n=1:length_y_bus % second index of Y element
+            current_nodes = [m n]
+            if m~=n
+                for k=1:r_data
+                    if linedata(k,1)==m && linedata(k,2)==n
+                        R = linedata(k,3);
+                        X = linedata(k,4);
+                        B = linedata(k,5);
+                        current_z = [R X B]
+                        y_bus(m,n) = -1/(R+1i*X)+B*1i/2;
+                        y_bus(n,m) = y_bus(m,n);
+                    end
+                end
+            end
+        end
     end
     
-    y_bus = y_off + y_diag;
-end
+    
+    
+    
+    %% z bus calculation
+    z_bus = y_bus^-1;

@@ -1,22 +1,27 @@
 clc;clear;
 %% Standardizing generator sub-transient reactances
 s_new = 100; % MVA
-s_old = [250 100 80 50 50]; % MVA
+s_old = [250; 100; 80; 50; 50;]; % MVA
 
 x1 = 15/100;
 x2 = 12/100;
 x3 = 10/100;
 x4 = 9/100;
 x5 = 8/100;
-x = [x1 x2 x3 x4 x5];
+x = [1 x1; 2 x2; 3 x3; 4 x4; 5 x5];
 
 % converting xolds to xnews
-x = x*1i.*s_new./s_old;
-
+x(:,2) = (x(:,2)./s_old)*s_new;
+[r_x,~] = size(x);
 %% Y bus calculation
 
 % import data as table
 linedata = readmatrix("line_data.xlsx");
+for k=1:r_x
+    linedata(end+1,1) = x(k,1);
+    linedata(end,2) = x(k,1);
+    linedata(end,4) = x(k,2);
+end
 [r_data,~] = size(linedata);
 
 % Preprocessing
@@ -40,9 +45,9 @@ for m=1:length_y_bus % m is the index of the y bus (row)
     end
     [r_z,~] = size(z);
     for impedance=1:r_z
-        R = z(impedance,1)
-        X = z(impedance,2)
-        B = z(impedance,3)
+        R = z(impedance,1);
+        X = z(impedance,2);
+        B = z(impedance,3);
         if R~=0 || X~=0
             y_bus(m,m) = y_bus(m,m) + 1./(R+X.*1i) + B.*1i/2;
         end
@@ -50,27 +55,30 @@ for m=1:length_y_bus % m is the index of the y bus (row)
 end
 
 % calculating off diagonal elements
-nodes = linedata(:,1:2);
-y_off = zeros(14,14);
-impedances = impedances(:,1)+impedances(:,2);
-[r,~] = size(linedata);
-
-
-for m=1:r
-    nodes(m,1)
-    nodes(m,2)
-    y_off(nodes(m,1),nodes(m,2)) = -1/impedances(m);
-    y_off(nodes(m,2),nodes(m,1)) = y_off(nodes(m,1),nodes(m,2));
+for m=1:length_y_bus % first index of Y element
+    for n=1:length_y_bus % second index of Y element
+        current_nodes = [m n]
+        if m~=n
+            for k=1:r_data
+                if linedata(k,1)==m && linedata(k,2)==n
+                    R = linedata(k,3);
+                    X = linedata(k,4);
+                    B = linedata(k,5);
+                    current_z = [R X B]
+                    y_bus(m,n) = -1/(R+1i*X)+B*1i/2;
+                    y_bus(n,m) = y_bus(m,n);
+                end
+            end
+        end
+    end
 end
 
-y_bus = y_bus + y_off;
+
+
+
 %% z bus calculation
 z_bus = y_bus^-1;
 
-% adding the generator sub-transient reactances to the z-bus matrix
-for k=1:length(x)
-    z_bus(k,k) = x(k)+z_bus(k,k);
-end
 
 %% prefault voltages
 
@@ -99,15 +107,10 @@ end
 % sag magnitudes
 sag_4_q1 = abs(sag_4_q1);
 sag_13_q1 = abs(sag_13_q1);
-%% q2: sags (lines 4-5 and 6-13 are open)
+%% q2a: sags (lines 4-5 and 6-13 are open)
 
 % forming the y,z buses
-y_bus_q2 = find_y_bus('line_data_q2.xlsx');
-z_bus_q2 = y_bus_q2^-1;
-% adding the generator sub-transient reactances to the z-bus matrix
-for k=1:length(x)
-    z_bus_q2(k,k) = x(k)+z_bus_q2(k,k);
-end
+[y_bus_q2, linedata_q2, z_bus_q2] = find_y_z_bus('line_data_q2.xlsx','gen_reactances.xlsx');
 
 %faults
 sag_4_q2 = zeros(14,1);
@@ -121,17 +124,9 @@ end
 % sag magnitudes
 sag_4_q2 = abs(sag_4_q2);
 sag_13_q2 = abs(sag_13_q2);
-%% q3: sags (no x3 and x5)
+%% q2b: sags (no x3 and x5)
 
-s_old = [250 100 50]; % MVA
-x_q3 = [x1 x2 x4]; % removing the sub transient reactances
-x_q3 = x_q3*1i.*s_new./s_old; % converting to new MVA base
-
-z_bus_q3 = y_bus^-1;
-% adding the generator sub-transient reactances to the z-bus matrix
-for k=1:length(x_q3)
-    z_bus_q3(k,k) = x_q3(k)+z_bus_q3(k,k);
-end
+[y_bus_q3, linedata_q3, z_bus_q3] = find_y_z_bus('line_data.xlsx','gen_reactances_q2');
 
 % faults
 sag_4_q3 = zeros(14,1);
@@ -151,6 +146,7 @@ d = linedata(:,6); %line distance
 frequency_100 = linedata(:,7); % faults/100km/yr
 
 frequency_d = frequency_100.*d./100;
+nodes = linedata(:,1:2);
 [r,c] = size(nodes);
 % calculating average sags
 average_sags_4 = zeros(r,3); % will be of the same size as the nodes matrix
@@ -160,8 +156,12 @@ average_sags_13(:,1:2) = nodes;
 
 % sags at lines for bus 4
 for k=1:r
-    sag1 = sag_4_q1(nodes(k,1));
-    sag2 = sag_4_q1(nodes(k,2));
+    from_node = linedata(k,1)
+    to_node = linedata(k,2)
+    sag_4_q1(linedata(k,1))
+    sag_4_q1(linedata(k,2))
+    sag1 = sag_4_q1(from_node);
+    sag2 = sag_4_q1(to_node);
     average_sags_4(k,3) = 0.5*(sag1+sag2);
 end
 
@@ -178,15 +178,20 @@ f_sag_13 = 0;
 % frequency of sag under 40%=0.4 pu
 [r,~] = size(frequency_table);
 for k=1:r
-    if frequency_table(k,3)<0.4
-        f_sag_4 = f_sag_4 + frequency_table(k,5);
+    current_ave_sag_4 = frequency_table(k,3)
+    if current_ave_sag_4<0.4
+        frequency = frequency_table(k,5)
+        f_sag_4 = f_sag_4 + frequency
     end
-    if frequency_table(k,4)<0.4
-        f_sag_13 = f_sag_13 + frequency_table(k,5);
+    current_ave_sag_13 = frequency_table(k,4)
+    if current_ave_sag_13<0.4
+        frequency = frequency_table(k,5)
+        f_sag_13 = f_sag_13 + frequency_table(k,5)
     end    
 end
 
 %% q4: Bar chart
+clc;
 
 % creating chart
 chart_intervals = 0:0.1:1; % each number represents an upper bound for an interval
@@ -196,17 +201,21 @@ chart = [chart_intervals zeros(length(chart_intervals),2)];
 
 % filling the chart
 % sags at bus 4
-for k=1:length(sag_4_q3)
+for k=1:length(sag_4_q1)
     for index=2:r
-        if chart(index-1,1)<sag_4_q3(k)&&sag_4_q3(k)<chart(index,1)
-            chart(index,2) = chart(index,2)+1;
+        l_bound = chart(index-1,1)
+        u_bound = chart(index,1)
+        current_sag = sag_4_q1(k)
+        if l_bound<sag_4_q1(k) && sag_4_q1(k)<u_bound
+            
+            chart(index,2) = chart(index,2)+1
         end
     end
 end
 % sags at bus 13
-for k=1:length(sag_13_q3)
+for k=1:length(sag_13_q1)
     for index=2:r
-        if chart(index-1,1)<sag_13_q3(k)&&sag_13_q3(k)<chart(index,1)
+        if chart(index-1,1)<sag_13_q1(k)&&sag_13_q1(k)<chart(index,1)
             chart(index,3) = chart(index,3)+1;
         end
     end
