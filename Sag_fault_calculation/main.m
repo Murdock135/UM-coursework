@@ -26,7 +26,7 @@ end
 
 % Preprocessing
 number_of_buses = max(max(linedata(:,1:2))); % picking the highest numbered bus
-y_bus = zeros(number_of_buses);
+y_bus = zeros(number_of_buses); % initializing y-bus
 [length_y_bus,~] = size(y_bus);
 
 % formatting the impedances
@@ -57,14 +57,14 @@ end
 % calculating off diagonal elements
 for m=1:length_y_bus % first index of Y element
     for n=1:length_y_bus % second index of Y element
-        current_nodes = [m n]
+        current_nodes = [m n];
         if m~=n
             for k=1:r_data
                 if linedata(k,1)==m && linedata(k,2)==n
                     R = linedata(k,3);
                     X = linedata(k,4);
                     B = linedata(k,5);
-                    current_z = [R X B]
+                    current_z = [R X B];
                     y_bus(m,n) = -1/(R+1i*X)+B*1i/2;
                     y_bus(n,m) = y_bus(m,n);
                 end
@@ -156,10 +156,10 @@ average_sags_13(:,1:2) = nodes;
 
 % sags at lines for bus 4
 for k=1:r
-    from_node = linedata(k,1)
-    to_node = linedata(k,2)
-    sag_4_q1(linedata(k,1))
-    sag_4_q1(linedata(k,2))
+    from_node = linedata(k,1);
+    to_node = linedata(k,2);
+    sag_4_q1(linedata(k,1));
+    sag_4_q1(linedata(k,2));
     sag1 = sag_4_q1(from_node);
     sag2 = sag_4_q1(to_node);
     average_sags_4(k,3) = 0.5*(sag1+sag2);
